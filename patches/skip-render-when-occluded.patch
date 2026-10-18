@@ -1,0 +1,27 @@
+diff --git a/engine/Sandbox.Engine/Core/Interop/NativeEngine/Sdl.cs b/engine/Sandbox.Engine/Core/Interop/NativeEngine/Sdl.cs
+index 9c2f8738..15825cea 100644
+--- a/engine/Sandbox.Engine/Core/Interop/NativeEngine/Sdl.cs
++++ b/engine/Sandbox.Engine/Core/Interop/NativeEngine/Sdl.cs
+@@ -61,6 +61,7 @@ internal static partial class Sdl
+ 	internal enum WindowFlags : ulong
+ 	{
+ 		Fullscreen = 0x1,
++		Occluded = 0x4,
+ 		Hidden = 0x8,
+ 		Borderless = 0x10,
+ 		Resizable = 0x20,
+diff --git a/engine/Sandbox.Tools/UI/PanelWindow.Rendering.cs b/engine/Sandbox.Tools/UI/PanelWindow.Rendering.cs
+index 195d989f..f146564b 100644
+--- a/engine/Sandbox.Tools/UI/PanelWindow.Rendering.cs
++++ b/engine/Sandbox.Tools/UI/PanelWindow.Rendering.cs
+@@ -45,6 +45,10 @@ public partial class PanelWindow
+ 
+ 		if ( IsMinimized ) return false;
+ 
++		// Metal can block acquiring a drawable for a covered window. Keep pumping events
++		// instead, but allow the initial hidden frame that makes a new window visible.
++		if ( IsShown && (Window.Flags & Sdl.WindowFlags.Occluded) != 0 ) return false;
++
+ 		// Resize events land mid-frame during a drag, and we draw from those too
+ 		if ( _inFrame && !AllowNestedFrame ) return false;
+ 
